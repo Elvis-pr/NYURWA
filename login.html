@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - NyurwaShop</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .login-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .login-header h1 {
+            color: #2563eb;
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .form-group label {
+            font-weight: 500;
+            color: #334155;
+        }
+        
+        .form-group input {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+        
+        .btn {
+            padding: 0.75rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+        
+        .login-footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            color: #64748b;
+        }
+        
+        .login-footer a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .alert-error {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
+        }
+        
+        .alert-success {
+            background-color: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>NyurwaShop</h1>
+            <p>Login to your account</p>
+        </div>
+        
+        <div id="errorAlert" class="alert alert-error"></div>
+        <div id="successAlert" class="alert alert-success"></div>
+        
+        <form id="loginForm" class="login-form">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+        
+        <div class="login-footer">
+            <p>Don't have an account? <a href="register.php">Register here</a></p>
+            <p><a href="forgot-password.php">Forgot your password?</a></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Hide any previous alerts
+            document.getElementById('errorAlert').style.display = 'none';
+            document.getElementById('successAlert').style.display = 'none';
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch('api/auth/login.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Login failed');
+                }
+                
+                // Show success message
+                const successAlert = document.getElementById('successAlert');
+                successAlert.textContent = data.message || 'Login successful!';
+                successAlert.style.display = 'block';
+                
+                // Store the token in localStorage
+                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                // Redirect to dashboard after 1.5 seconds
+                setTimeout(() => {
+                    window.location.href = 'index.php';
+                }, 1500);
+                
+            } catch (error) {
+                // Show error message
+                const errorAlert = document.getElementById('errorAlert');
+                errorAlert.textContent = error.message;
+                errorAlert.style.display = 'block';
+                
+                // Clear password field
+                document.getElementById('password').value = '';
+            }
+        });
+    </script>
+</body>
+</html>
